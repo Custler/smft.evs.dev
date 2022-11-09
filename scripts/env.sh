@@ -127,7 +127,7 @@ done
 export NODE_IP_ADDR
 
 export ServiceName="evsnode"
-export ADNL_PORT="43333"
+export ADNL_PORT="45555"
 export NODE_ADDRESS="${NODE_IP_ADDR}:${ADNL_PORT}"
 export RCONSOLE_PORT="5031"
 

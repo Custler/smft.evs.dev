@@ -126,7 +126,7 @@ until [[ "$(echo "${NODE_IP_ADDR}" | grep "\." -o | wc -l)" -eq 3 ]]; do
 done
 export NODE_IP_ADDR
 
-export ServiceName="evsnode"
+export ServiceName="tonnode"
 export ADNL_PORT="45555"
 export NODE_ADDRESS="${NODE_IP_ADDR}:${ADNL_PORT}"
 export RCONSOLE_PORT="5031"

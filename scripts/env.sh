@@ -197,6 +197,7 @@ case "${NETWORK_TYPE%%.*}" in
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
         export TONOS_CLI_GIT_COMMIT="consensus-updates"
         export TONOS_CLI_FEATURES=""
+        export NET_GLOBAL_CONFIG_FILE="everscale-global.config.json"
         ;;
     gosh)
         export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
@@ -235,7 +236,7 @@ export SOLC_SRC_DIR="${NODE_TOP_DIR}/SolC"
 #=====================================================
 # Work folders for db, keys and conf
 export NODE_BIN_DIR=$HOME/bin
-
+export NET_GLOBAL_CONFIG_FILE="ton-global.config.json"
 #WRK_DIR=/dev/shm   # ramdisk in linux only for fast initial sync
 WRK_DIR=/var
 

@@ -116,7 +116,7 @@ echo " ..DONE :"
 echo "${RNODE_WORK_DIR} :"
 ls -alhFp ${RNODE_WORK_DIR}
 echo
-cp -f "${CONFIGS_DIR}/${NETWORK_TYPE}/ton-global.config.json" "${R_CFG_DIR}/"
+cp -f "${CONFIGS_DIR}/${NETWORK_TYPE}/${NET_GLOBAL_CONFIG_FILE}" "${R_CFG_DIR}/"
 
 echo " ..DONE"
 

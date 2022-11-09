@@ -1,16 +1,16 @@
 #!/bin/sh
 #
-# PROVIDE: tonnode
+# PROVIDE: evsnode
 # REQUIRE: NETWORKING SERVERS DAEMON
 # KEYWORD: nojail shutdown
 #
 
 . /etc/rc.subr
 
-name="tonnode"
+name="evsnode"
 desc="N_SERVICE_DESCRIPTION"
-rcvar="tonnode_enable"
-tonnode_user="N_USER"
+rcvar="evsnode_enable"
+evsnode_user="N_USER"
 pidfile="N_NODE_LOGS_ARCH/daemon.pid"
 pidfile_child="N_NODE_LOGS_ARCH/${name}.pid"
 logfile="N_NODE_LOG_FILE"
@@ -20,23 +20,23 @@ command_args="N_ARGUMENTS"
 export STATSD_DOMAIN="127.0.0.1:"
 export STATSD_PORT=9125
 
-start_cmd="tonnode_start"
-stop_cmd="tonnode_stop"
-status_cmd="tonnode_status"
-restart_cmd="tonnode_restart"
+start_cmd="evsnode_start"
+stop_cmd="evsnode_stop"
+status_cmd="evsnode_status"
+restart_cmd="evsnode_restart"
 
-tonnode_start() {
+evsnode_start() {
   rnode_pid=$(pgrep rnode)
   if [ -z $rnode_pid ];then
-    su ${tonnode_user} -c "/usr/sbin/daemon -P ${pidfile} -p ${pidfile_child} -o ${logfile} -r ${command} ${command_args}"
+    su ${evsnode_user} -c "/usr/sbin/daemon -P ${pidfile} -p ${pidfile_child} -o ${logfile} -r ${command} ${command_args}"
     sleep 2
-    tonnode_status
+    evsnode_status
   else
     echo "${name} already running at pid $rnode_pid"
   fi
 }
 
-tonnode_stop() {
+evsnode_stop() {
   if [ -e "${pidfile}" ]; then
     echo -n "killing $(cat ${pidfile}) "
     kill -s TERM `cat ${pidfile}`
@@ -65,12 +65,12 @@ tonnode_stop() {
   fi
 }
 
-tonnode_restart(){
-  tonnode_stop
+evsnode_restart(){
+  evsnode_stop
   sleep 5
-  tonnode_start
+  evsnode_start
 }
-tonnode_status() {
+evsnode_status() {
   if [ -e "${pidfile}" ]; then
     echo "Daemon is running as pid `cat ${pidfile}`"
     echo "${name} is running as pid `cat ${pidfile_child}`"
@@ -80,5 +80,5 @@ tonnode_status() {
 }
 
 load_rc_config ${name}
-: ${tonnode_enable:=no}
+: ${evsnode_enable:=no}
 run_rc_command "$1"

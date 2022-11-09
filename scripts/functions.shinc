@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# (C) Sergey Tyurin  2022-09-19 13:00:00
+# (C) Sergey Tyurin  2022-11-07 13:00:00
 
 # Disclaimer
 ##################################################################################################################
@@ -116,12 +116,12 @@ case "$NetName" in
         $NODE_BIN_DIR/tonos-cli config --url $NETWORK_TYPE &>/dev/null
         export ELECTOR_TYPE="${ELECTOR_TYPE:=fift}"                          # can be 'solidity' or 'fift'
         ;;
-    rustnet)
-        export DApp_URL=${RustNet_DApp_URL}
+    smft)
+        export DApp_URL=${SMFT_DApp_URL}
         $NODE_BIN_DIR/tonos-cli config endpoint reset &>/dev/null
-        $NODE_BIN_DIR/tonos-cli config endpoint add $NETWORK_TYPE $RustNet_DApp_List &>/dev/null
+        $NODE_BIN_DIR/tonos-cli config endpoint add $NETWORK_TYPE $SMFT_DApp_List &>/dev/null
         $NODE_BIN_DIR/tonos-cli config --url $NETWORK_TYPE &>/dev/null
-        export ELECTOR_TYPE="${ELECTOR_TYPE:=solidity}"                      # can be 'solidity' or 'fift'
+        export ELECTOR_TYPE="${ELECTOR_TYPE:=fift}"                      # can be 'solidity' or 'fift'
         ;;
     *)
         echo "###-ERROR(line $LINENO in echo ${0##*/}): Unknown NETWORK_TYPE (${NETWORK_TYPE})"
@@ -159,6 +159,9 @@ function Determine_Current_Network() {
         rfld)
             CURR_NET_ID=$RFLD_NET_ID
             ;;
+        smft)
+            CURR_NET_ID=$SMFT_NET_ID
+            ;;
         *)
             CURR_NET_ID="123456789ABCDEF0"
             ;;
@@ -178,6 +181,9 @@ function Determine_Current_Network() {
             ;;
         $RFLD_NET_ID)
             CurrNetInfo="${BoldText}${RedBack}You are in RFLD network${NormText}"
+            ;;
+        $SMFT_NET_ID)
+            CurrNetInfo="${BoldText}${RedBack}You are in SMFT network${NormText}"
             ;;
         *)
             CurrNetInfo="${BoldText}${RedBlink}You are in UNKNOWN network${NormText} or you need to update 'env.sh'"

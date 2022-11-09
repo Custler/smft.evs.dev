@@ -45,7 +45,7 @@ case "$1" in
     dapp)
         RUST_NODE_BUILD=true
         DAPP_NODE_BUILD=true
-        RNODE_FEATURES="external_db,metrics"
+        RNODE_FEATURES="${RNODE_FEATURES},external_db,metrics"
         echo "---INFO: Will build node for DApp"
         ;;
     *)
@@ -201,15 +201,15 @@ if ${RUST_NODE_BUILD};then
     cargo update
 
     # node git commit
-    export GC_TON_NODE="$(git --git-dir="$RNODE_SRC_DIR/.git" rev-parse HEAD 2>/dev/null)"
+    export GC_RNODE="$(git --git-dir="$RNODE_SRC_DIR/.git" rev-parse HEAD 2>/dev/null)"
     # block version
     export NODE_BLK_VER=$(cat $RNODE_SRC_DIR/src/validating_utils.rs |grep -A1 'supported_version'|tail -1|tr -d ' ')
 
     # patch main.rs
     sed -i.bak -e '/TON NODE git commit:         {}\\n\\/p; s/TON NODE git commit:         {}\\n\\/Node block version:          {}\\n\\/' $RNODE_SRC_DIR/src/main.rs
-    sed -i.bak -e '/std::option_env!("GC_TON_NODE").unwrap_or("Not set"),/p; s/std::option_env!("GC_TON_NODE").unwrap_or("Not set"),/std::option_env!("NODE_BLK_VER").unwrap_or("Not set"),/' $RNODE_SRC_DIR/src/main.rs
+    sed -i.bak -e '/std::option_env!("GC_RNODE").unwrap_or("Not set"),/p; s/std::option_env!("GC_RNODE").unwrap_or("Not set"),/std::option_env!("NODE_BLK_VER").unwrap_or("Not set"),/' $RNODE_SRC_DIR/src/main.rs
 
-    echo -e "${BoldText}${BlueBack}---INFO: RNODE build flags: ${RNODE_FEATURES} commit: ${GC_TON_NODE} Block version: ${NODE_BLK_VER}${NormText}"
+    echo -e "${BoldText}${BlueBack}---INFO: RNODE build flags: ${RNODE_FEATURES} commit: ${GC_RNODE} Block version: ${NODE_BLK_VER}${NormText}"
     RUSTFLAGS="-C target-cpu=native" cargo build --release --features "${RNODE_FEATURES}"
 
     # cp $NODE_BIN_DIR/rnode $NODE_BIN_DIR/rnode_${BackUP_Time}|cat
@@ -226,14 +226,43 @@ if ${RUST_NODE_BUILD};then
     git clone --recurse-submodules "${RCONS_GIT_REPO}" $RCONS_SRC_DIR
     cd $RCONS_SRC_DIR
     git checkout "${RCONS_GIT_COMMIT}"
-    git submodule init
-    git submodule update
+    git submodule init && git submodule update --recursive
+    git submodule foreach 'git submodule init'
+    git submodule foreach 'git submodule update  --recursive'
     cargo update
-    RUSTFLAGS="-C target-cpu=native" cargo build --release
+    export GC_RCONS="$(git --git-dir="$RCONS_SRC_DIR/.git" rev-parse HEAD 2>/dev/null)"
+    echo -e "${BoldText}${BlueBack}---INFO: RCONS build flags: ${RCONS_FEATURES} commit: ${GC_RCONS}${NormText}"
+    RUSTFLAGS="-C target-cpu=native" cargo build --release --features "${RCONS_FEATURES}"
 
     find $RCONS_SRC_DIR/target/release/ -maxdepth 1 -type f ${FEXEC_FLG} -exec cp -f {} $NODE_BIN_DIR/ \;
     echo "---INFO: build RUST NODE ... DONE."
 fi
+
+#=====================================================
+# Build tonos-cli
+echo
+echo '################################################'
+echo "---INFO: build tonos-cli ... "
+echo -e "${BoldText}${BlueBack}---INFO: TONOS git repo:   ${TONOS_CLI_GIT_REPO} ${NormText}"
+echo -e "${BoldText}${BlueBack}---INFO: TONOS git commit: ${TONOS_CLI_GIT_COMMIT} ${NormText}"
+
+[[ -d ${TONOS_CLI_SRC_DIR} ]] && rm -rf "${TONOS_CLI_SRC_DIR}"
+git clone --recurse-submodules "${TONOS_CLI_GIT_REPO}" "${TONOS_CLI_SRC_DIR}"
+cd "${TONOS_CLI_SRC_DIR}"
+git checkout "${TONOS_CLI_GIT_COMMIT}"
+git submodule init && git submodule update --recursive
+git submodule foreach 'git submodule init'
+git submodule foreach 'git submodule update  --recursive'
+
+cargo update
+
+export GC_TONOS="$(git --git-dir="$TONOS_CLI_SRC_DIR/.git" rev-parse HEAD 2>/dev/null)"
+echo -e "${BoldText}${BlueBack}---INFO: TONOS build flags: ${TONOS_CLI_FEATURES} commit: ${GC_TONOS}${NormText}"
+RUSTFLAGS="-C target-cpu=native" cargo build --release --features "${TONOS_CLI_FEATURES}"
+
+# cp $NODE_BIN_DIR/tonos-cli $NODE_BIN_DIR/tonos-cli_${BackUP_Time}|cat
+cp "${TONOS_CLI_SRC_DIR}/target/release/tonos-cli" "$NODE_BIN_DIR/"
+echo "---INFO: build tonos-cli ... DONE"
 
 #=====================================================
 # Build TON Solidity Compiler (solc)
@@ -268,24 +297,6 @@ fi
 # RUSTFLAGS="-C target-cpu=native" cargo build --release
 # cp -f "${TVM_LINKER_SRC_DIR}/tvm_linker/target/release/tvm_linker" $NODE_BIN_DIR/
 # echo "---INFO: build TVM-linker ... DONE."
-
-#=====================================================
-# Build tonos-cli
-echo
-echo '################################################'
-echo "---INFO: build tonos-cli ... "
-echo -e "${BoldText}${BlueBack}---INFO: TONOS git repo:   ${TONOS_CLI_GIT_REPO} ${NormText}"
-echo -e "${BoldText}${BlueBack}---INFO: TONOS git commit: ${TONOS_CLI_GIT_COMMIT} ${NormText}"
-
-[[ -d ${TONOS_CLI_SRC_DIR} ]] && rm -rf "${TONOS_CLI_SRC_DIR}"
-git clone --recurse-submodules "${TONOS_CLI_GIT_REPO}" "${TONOS_CLI_SRC_DIR}"
-cd "${TONOS_CLI_SRC_DIR}"
-git checkout "${TONOS_CLI_GIT_COMMIT}"
-cargo update
-RUSTFLAGS="-C target-cpu=native" cargo build --release
-# cp $NODE_BIN_DIR/tonos-cli $NODE_BIN_DIR/tonos-cli_${BackUP_Time}|cat
-cp "${TONOS_CLI_SRC_DIR}/target/release/tonos-cli" "$NODE_BIN_DIR/"
-echo "---INFO: build tonos-cli ... DONE"
 
 #=====================================================
 # download contracts

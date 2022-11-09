@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# (C) Sergey Tyurin  2022-09-19 13:00:00
+# (C) Sergey Tyurin  2022-11-07 13:00:00
 
 # Disclaimer
 ##################################################################################################################
@@ -39,7 +39,7 @@ export LNIC_ADDRESS="0:bdcefecaae5d07d926f1fa881ea5b61d81ea748bd02136c0dbe766043
 
 #=====================================================
 # Network related variables
-export NETWORK_TYPE="main.evs.dev"      # can be main.* / net.* / fld.* / rfld.* / rustnet.*
+export NETWORK_TYPE="smft.evs.dev"      # can be main.* / net.* / fld.* / rfld.* / smft.* / gosh.*
 export Node_Blk_Min_Ver=32
 export ELECTOR_TYPE="fift"
 export NODE_WC=0                        # Node WorkChain 
@@ -70,6 +70,9 @@ export RFLD_DApp_List="https://rfld-dapp.itgold.io"
 export RustNet_DApp_URL="https://rustnet.ton.dev"
 export RustNet_DApp_List="https://rustnet1.ton.dev"
 
+export SMFT_DApp_URL="https://smft-dapp.itgold.io"
+export SMFT_DApp_List="https://smft-dapp.itgold.io"
+
 #=====================================================
 # Depool deploy defaults
 export ValidatorAssuranceT=100000       # Assurance in tokens
@@ -89,7 +92,7 @@ export TIME_SHIFT=300                   # Time between sequential scripts
 export LC_Send_MSG_Timeout=10           # time after Lite-Client send message to BC in seconds
 
 #=====================================================
-# FLD & RFLD free giver to grant 100k tokens
+# FLD & RFLD & SMFT free giver to grant 100k tokens
 export Marvin_Addr="0:deda155da7c518f57cb664be70b9042ed54a92542769735dfb73d3eef85acdaf" 
 
 #=====================================================
@@ -99,6 +102,7 @@ export  DEV_NET_ID="B2E99A7505EDA599"
 export  FLD_NET_ID="F6176FF8E2CA6E5D"
 export RFLD_NET_ID="AA183E8917635635"
 export  RST_NET_ID="228F05E8BCB11DEF"
+export SMFT_NET_ID="778F05E8BCB11DEF"
 
 #=====================================================
 # Node addresses & ports
@@ -122,47 +126,99 @@ until [[ "$(echo "${NODE_IP_ADDR}" | grep "\." -o | wc -l)" -eq 3 ]]; do
 done
 export NODE_IP_ADDR
 
-export ServiceName="tonnode"
-export ADNL_PORT="48888"
+export ServiceName="evsnode"
+export ADNL_PORT="43333"
 export NODE_ADDRESS="${NODE_IP_ADDR}:${ADNL_PORT}"
 export RCONSOLE_PORT="5031"
 
 #=====================================================
 # GIT addresses & commits
-export RUST_VERSION="1.63.0"
+export RUST_VERSION="1.65.0"
 export MIN_TC_VERSION="0.28.5"
 export MIN_RC_VERSION="0.1.286"
 # for corect work automatic update 
 # GIT_COMMIT should be "master" or certain commit only
 # not a branch name!
 
-export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
-export RNODE_GIT_COMMIT="master"
-export RNODE_FEATURES=""
-if [[ "${NETWORK_TYPE%%.*}" == "fld" ]];then
-    export RNODE_GIT_REPO="https://github.com/Custler/evs-rnode.git"
-    export RNODE_GIT_COMMIT="master"
-    export RNODE_FEATURES=""
-fi
-
-export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
-export RCONS_GIT_COMMIT="master"
-
-export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
-export TONOS_CLI_GIT_COMMIT="master"
+case "${NETWORK_TYPE%%.*}" in 
+    main)
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_COMMIT="master"
+        export RNODE_FEATURES=""
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_COMMIT="master"
+        export RCONS_FEATURES=""
+        export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
+        export TONOS_CLI_GIT_COMMIT="master"
+        export TONOS_CLI_FEATURES=""
+        ;;
+    net | devnet)
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_COMMIT="master"
+        export RNODE_FEATURES=""
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_COMMIT="master"
+        export RCONS_FEATURES=""
+        export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
+        export TONOS_CLI_GIT_COMMIT="master"
+        export TONOS_CLI_FEATURES=""
+        ;;
+    fld)
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_COMMIT="remp-dev"
+        export RNODE_FEATURES=""
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_COMMIT="master"
+        export RCONS_FEATURES=""
+        export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
+        export TONOS_CLI_GIT_COMMIT="master"
+        export TONOS_CLI_FEATURES=""
+        ;;
+    rfld)
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_COMMIT="tmp-rc"
+        export RNODE_FEATURES=""
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_COMMIT="master"
+        export RCONS_FEATURES=""
+        export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
+        export TONOS_CLI_GIT_COMMIT="master"
+        export TONOS_CLI_FEATURES=""
+        ;;
+    smft)
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_COMMIT="consensus-updates"
+        export RNODE_FEATURES="workchains,metrics,tracing"
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_COMMIT="consensus-updates"
+        export RCONS_FEATURES="workchains"
+        export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
+        export TONOS_CLI_GIT_COMMIT="consensus-updates"
+        export TONOS_CLI_FEATURES=""
+        ;;
+    gosh)
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_COMMIT="master"
+        export RNODE_FEATURES="gosh"
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_COMMIT="master"
+        export RCONS_FEATURES=""
+        export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
+        export TONOS_CLI_GIT_COMMIT="master"
+        export TONOS_CLI_FEATURES=""
+        ;;
+    *)
+        echo "###-ERROR(line $LINENO in echo ${0##*/}): Unknown NETWORK_TYPE (${NETWORK_TYPE})"
+        exit 1
+        ;;
+esac
 
 export TVM_LINKER_GIT_REPO="https://github.com/tonlabs/TVM-linker.git"
 export TVM_LINKER_GIT_COMMIT="master"
-
 export SOLC_GIT_REPO="https://github.com/tonlabs/TON-Solidity-Compiler.git"
 export SOLC_GIT_COMMIT="master"
-
 export CONTRACTS_GIT_REPO="https://github.com/tonlabs/ton-labs-contracts.git"
 export CONTRACTS_GIT_COMMIT="master"
-
-[[ "${NETWORK_TYPE%%.*}" == "rustnet" ]] &&  export CONTRACTS_GIT_COMMIT="RUSTCUP_DEPOOL_--_DO_NOT_DEPLOY_ON_MAINNET"  # ###  RUSTCUP_DEPOOL_--_DO_NOT_DEPLOY_ON_MAINNET !!!!!!!!!!!!!
-
-export RustCup_El_ABI_URL="https://raw.githubusercontent.com/tonlabs/rustnet.ton.dev/main/docker-compose/ton-node/configs/Elector.abi.json"
 export Surf_GIT_Commit="multisig-surf-v2"
 
 #=====================================================

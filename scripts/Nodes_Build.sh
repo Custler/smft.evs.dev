@@ -113,10 +113,10 @@ case "$OS_SYSTEM" in
         $PKG_MNGR group install -y "Development Tools"
         if [[ -n "$(cat /etc/os-release |grep 'VERSION_ID="9.')" ]];then
             PKGs_SET=$PKGS_OL9UEK
-            $PKG_MNGR config-manager --set-enabled ol9_codeready_builder
+            # $PKG_MNGR config-manager --set-enabled ol9_codeready_builder
             $PKG_MNGR install -y oracle-epel-release-el9
         else 
-            $PKG_MNGR config-manager --set-enabled ol8_codeready_builder
+            #$PKG_MNGR config-manager --set-enabled ol8_codeready_builder
             $PKG_MNGR install -y oracle-epel-release-el8
         fi
         sudo wget https://github.com/mikefarah/yq/releases/download/v4.13.3/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq

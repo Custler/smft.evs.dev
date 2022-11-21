@@ -109,6 +109,8 @@ case "$OS_SYSTEM" in
         export ZSTD_LIB_DIR=/usr/lib64
         PKGs_SET=$PKGS_CentOS
         PKG_MNGR=$PKG_MNGR_CentOS
+            $PKG_MNGR config-manager --set-disabled ol8_codeready_builder
+            $PKG_MNGR config-manager --set-disabled ol8_baseos_latest
         $PKG_MNGR -y update --allowerasing
         $PKG_MNGR group install -y "Development Tools"
         if [[ -n "$(cat /etc/os-release |grep 'VERSION_ID="9.')" ]];then

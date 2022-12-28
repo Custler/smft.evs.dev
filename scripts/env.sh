@@ -223,6 +223,7 @@ export SOLC_GIT_COMMIT="master"
 export CONTRACTS_GIT_REPO="https://github.com/tonlabs/ton-labs-contracts.git"
 export CONTRACTS_GIT_COMMIT="master"
 export Surf_GIT_Commit="multisig-surf-v2"
+export RustCup_El_ABI_URL="https://raw.githubusercontent.com/tonlabs/rustnet.ton.dev/main/docker-compose/ton-node/configs/Elector.abi.json"
 
 #=====================================================
 # Source code folders

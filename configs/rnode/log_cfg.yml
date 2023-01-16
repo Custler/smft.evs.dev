@@ -90,3 +90,6 @@ loggers:
 
   telemetry:
     level: error
+
+  verificator:
+    level: debug

@@ -17,16 +17,17 @@ if [[ "$OS_SYSTEM" == "FreeBSD" ]];then
 fi
 #=====================================================
 # Build rnode console
-[[ ! -z ${RCONS_SRC_DIR} ]] && rm -rf "${RCONS_SRC_DIR}"
+[[ -d ${RCONS_SRC_DIR} ]] && rm -rf "${RCONS_SRC_DIR}"
 git clone --recurse-submodules "${RCONS_GIT_REPO}" $RCONS_SRC_DIR
 cd $RCONS_SRC_DIR
 git checkout "${RCONS_GIT_COMMIT}"
 git submodule init && git submodule update --recursive
 git submodule foreach 'git submodule init'
 git submodule foreach 'git submodule update  --recursive'
-
 cargo update
-cargo build --release
+export GC_RCONS="$(git --git-dir="$RCONS_SRC_DIR/.git" rev-parse HEAD 2>/dev/null)"
+echo -e "${BoldText}${BlueBack}---INFO: RCONS build flags: ${RCONS_FEATURES} commit: ${GC_RCONS}${NormText}"
+RUSTFLAGS="-C target-cpu=native" cargo build --release --features "${RCONS_FEATURES}"
 
 find $RCONS_SRC_DIR/target/release/ -maxdepth 1 -type f ${FEXEC_FLG} -exec cp -f {} ${NODE_BIN_DIR}/ \;
 

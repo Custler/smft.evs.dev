@@ -190,7 +190,7 @@ case "${NETWORK_TYPE%%.*}" in
     smft)
         export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
         export RNODE_GIT_COMMIT="consensus-updates"
-        export RNODE_FEATURES="workchains,verification,external_db,metrics"
+        export RNODE_FEATURES="workchains,verification"
         export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
         export RCONS_GIT_COMMIT="consensus-updates"
         export RCONS_FEATURES="workchains,verification"

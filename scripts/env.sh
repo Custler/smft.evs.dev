@@ -193,7 +193,7 @@ case "${NETWORK_TYPE%%.*}" in
         export RNODE_FEATURES="workchains,verification,external_db,metrics"
         export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
         export RCONS_GIT_COMMIT="consensus-updates"
-        export RCONS_FEATURES="workchains,verification,external_db,metrics"
+        export RCONS_FEATURES="workchains,verification"
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
         export TONOS_CLI_GIT_COMMIT="consensus-updates"
         export TONOS_CLI_FEATURES=""

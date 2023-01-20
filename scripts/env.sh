@@ -70,8 +70,8 @@ export RFLD_DApp_List="https://rfld-dapp.itgold.io"
 export RustNet_DApp_URL="https://rustnet.ton.dev"
 export RustNet_DApp_List="https://rustnet1.ton.dev"
 
-export SMFT_DApp_URL="https://smft-dapp.itgold.io"
-export SMFT_DApp_List="https://smft-dapp.itgold.io"
+export SMFT_DApp_URL="https://dapp-test.itgold.io"
+export SMFT_DApp_List="https://dapp-test.itgold.io"
 
 #=====================================================
 # Depool deploy defaults

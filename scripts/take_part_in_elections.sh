@@ -305,6 +305,12 @@ else
     fi
     mv -f console.tmp  ${R_CFG_DIR}/console.json
     $CALL_RC -c "election-bid $Validating_Start $Validating_Stop" &> "${ELECTIONS_WORK_DIR}/${elections_id}-bid.log"
+    if [[ -n "$(cat ${ELECTIONS_WORK_DIR}/${elections_id}-bid.log | grep 'panicked')" ]];then
+        cat ${ELECTIONS_WORK_DIR}/${elections_id}-bid.log
+        echo -e "${BoldText}${RedBack}###-ALARM: Console make bid boc ERROR! check file ${ELECTIONS_WORK_DIR}/${elections_id}-bid.log ${NormText}"
+        "${SCRIPT_DIR}/Send_msg_toTelBot.sh" "$HOSTNAME Server" "$Tg_SOS_sign ###-ALARM: Console make bid boc ERROR!" 2>&1 > /dev/null
+        exit 1
+    fi
     # cp -f ${R_CFG_DIR}/config.json config.${elections_id}
     mv -f validator-query.boc "${ELECTIONS_WORK_DIR}/${elections_id}_query.boc"
 fi

@@ -84,7 +84,7 @@ fi
 # Set appropriate endpoints according network settled in env.sh
 NetName="${NETWORK_TYPE%%.*}"
 case "$NetName" in
-    main)
+    main | mainnet)
         export DApp_URL=${Main_DApp_URL}/$DAPP_Project_id
         $NODE_BIN_DIR/tonos-cli config endpoint reset &>/dev/null
         $NODE_BIN_DIR/tonos-cli config endpoint add $NETWORK_TYPE $MainNet_DApp_List &>/dev/null
@@ -642,8 +642,10 @@ function Get_Engine_ADNL() {
     local Result="null"
     local Curr_Engine_Val_Keys=`cat ${R_CFG_DIR}/config.json | jq .validator_keys`
     [[ "$Curr_Engine_Val_Keys" == "null" ]] && echo "$Result" && return
+    local BLS_0=`echo $Curr_Engine_Val_Keys  | jq -r .[0].validator_bls_key`
     local ADNL_0=`echo $Curr_Engine_Val_Keys | jq -r .[0].validator_adnl_key_id`
     local Elec_0=`echo $Curr_Engine_Val_Keys | jq -r .[0].election_id`
+    local BLS_1=`echo $Curr_Engine_Val_Keys  | jq -r .[1].validator_bls_key`
     local ADNL_1=`echo $Curr_Engine_Val_Keys | jq -r .[1].validator_adnl_key_id`
     local Elec_1=`echo $Curr_Engine_Val_Keys | jq -r .[1].election_id`
     if [[ "$ADNL_0" == "null" ]];then
@@ -660,11 +662,15 @@ function Get_Engine_ADNL() {
             | base64 -d|od -t xC -An|tr -d '\n'|tr -d ' '`
         local Next_Engine_ADNL=`echo $Curr_Engine_Val_Keys | jq -r ".[]|select(.election_id == $Next_Engine_Elec_ID)|.validator_adnl_key_id" \
             | base64 -d|od -t xC -An|tr -d '\n'|tr -d ' '`
+        local Curr_Engine_BLS=`echo $Curr_Engine_Val_Keys | jq -r ".[]|select(.election_id == $Curr_Engine_Elec_ID)|.validator_bls_key" \
+            | base64 -d|od -t xC -An|tr -d '\n'|tr -d ' '`
+        local Next_Engine_BLS=`echo $Curr_Engine_Val_Keys | jq -r ".[]|select(.election_id == $Next_Engine_Elec_ID)|.validator_bls_key" \
+            | base64 -d|od -t xC -An|tr -d '\n'|tr -d ' '`
     fi
     if [[ -z $ADNL_1 ]] || [[ "$ADNL_1" == "null" ]];then
-        Result="${Curr_Engine_ADNL} ${Curr_Engine_Elec_ID}"
+        Result="${Curr_Engine_ADNL} ${Curr_Engine_Elec_ID} ${Curr_Engine_BLS}"
     else
-        Result="${Curr_Engine_ADNL} ${Curr_Engine_Elec_ID} ${Next_Engine_ADNL} ${Next_Engine_Elec_ID}"
+        Result="${Curr_Engine_ADNL} ${Curr_Engine_Elec_ID} ${Next_Engine_ADNL} ${Next_Engine_Elec_ID} ${Curr_Engine_BLS} ${Next_Engine_BLS}"
     fi
     echo "$Result"
 }

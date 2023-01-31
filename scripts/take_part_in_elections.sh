@@ -305,6 +305,15 @@ else
     fi
     mv -f console.tmp  ${R_CFG_DIR}/console.json
     $CALL_RC -c "election-bid $Validating_Start $Validating_Stop" &> "${ELECTIONS_WORK_DIR}/${elections_id}-bid.log"
+    # pub const BLS_SECRET_KEY_LEN: usize = 32;
+    # pub const BLS_PUBLIC_KEY_LEN_FOR_MIN_PK_MODE: usize = 48;
+    # pub const BLS_PUBLIC_KEY_LEN_FOR_MIN_SIG_MODE: usize = 96;
+    # pub const BLS_PUBLIC_KEY_LEN: usize = BLS_PUBLIC_KEY_LEN_FOR_MIN_PK_MODE;
+    # pub const BLS_KEY_MATERIAL_LEN: usize = 32;
+    # pub const BLS_SIG_LEN_FOR_MIN_PK_MODE: usize = 96;
+    # pub const BLS_SIG_LEN_FOR_MIN_SIG_MODE: usize = 48;
+    # pub const BLS_SIG_LEN: usize = BLS_SIG_LEN_FOR_MIN_PK_MODE;
+    # pub const BLS_SEED_LEN: usize = 32;
     if [[ -n "$(cat ${ELECTIONS_WORK_DIR}/${elections_id}-bid.log | grep 'panicked')" ]];then
         cat ${ELECTIONS_WORK_DIR}/${elections_id}-bid.log
         echo -e "${BoldText}${RedBack}###-ALARM: Console make bid boc ERROR! check file ${ELECTIONS_WORK_DIR}/${elections_id}-bid.log ${NormText}"

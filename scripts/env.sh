@@ -188,19 +188,19 @@ case "${NETWORK_TYPE%%.*}" in
         export TONOS_CLI_FEATURES=""
         ;;
     smft)
-        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ever-node.git"
         export RNODE_GIT_COMMIT="consensus-updates"
         export RNODE_FEATURES="workchains,verification"
-        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ever-node-tools.git"
         export RCONS_GIT_COMMIT="consensus-updates"
         export RCONS_FEATURES="workchains"
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
         export TONOS_CLI_GIT_COMMIT="consensus-updates"
         export TONOS_CLI_FEATURES=""
-        export NET_GLOBAL_CONFIG_FILE="everscale-global.config.json"
+#        export NET_GLOBAL_CONFIG_FILE="everscale-global.config.json"
         ;;
     gosh)
-        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ever-node.git"
         export RNODE_GIT_COMMIT="master"
         export RNODE_FEATURES="gosh"
         export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"

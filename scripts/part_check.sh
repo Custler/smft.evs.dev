@@ -115,8 +115,10 @@ fi
 
 Your_Stake=`echo "${ADNL_FOUND}" | awk '{print $1 / 1000000000}'`
 You_PubKey=`echo "${ADNL_FOUND}" | awk '{print $4}'`
+You_BLSKey=`echo "${ADNL_FOUND}" | awk '{print $5}'`
 
 echo "---INFO: Your stake: $Your_Stake with ADNL: $(echo "$ADNL_KEY" | tr "[:upper:]" "[:lower:]")"
+echo "You BLS key in Elector:    $You_BLSKey"
 echo "You public key in Elector: $You_PubKey"
 echo "You will start validate from $(TD_unix2human ${elections_id})"
 

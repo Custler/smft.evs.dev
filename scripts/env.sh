@@ -41,7 +41,7 @@ export LNIC_ADDRESS="0:bdcefecaae5d07d926f1fa881ea5b61d81ea748bd02136c0dbe766043
 # Network related variables
 export NETWORK_TYPE="smft.evs.dev"      # can be main.* / net.* / fld.* / rfld.* / smft.* / gosh.*
 export Node_Blk_Min_Ver=32
-export ELECTOR_TYPE="fift"
+export ELECTOR_TYPE="solidity"
 export NODE_WC=0                        # Node WorkChain 
 
 export FORCE_USE_DAPP=false             # For offnode works or to use DApp Server instead of use node's console to operate
@@ -75,9 +75,9 @@ export SMFT_DApp_List="https://dapp-test.itgold.io"
 
 #=====================================================
 # Depool deploy defaults
-export ValidatorAssuranceT=100000       # Assurance in tokens
+export ValidatorAssuranceT=500000       # Assurance in tokens
 export MinStakeT=10                     # Min DePool assepted stake in tokens
-export ParticipantRewardFraction=95     # In % participant share from reward
+export ParticipantRewardFraction=80     # In % participant share from reward
 export BalanceThresholdT=20             # Min depool self balance to operate
 export TIK_REPLANISH_AMOUNT=10          # If Tik acc balance less 2 tokens, It will be auto topup with this amount
 

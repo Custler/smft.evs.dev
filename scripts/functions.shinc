@@ -121,7 +121,7 @@ case "$NetName" in
         $NODE_BIN_DIR/tonos-cli config endpoint reset &>/dev/null
         $NODE_BIN_DIR/tonos-cli config endpoint add $NETWORK_TYPE $SMFT_DApp_List &>/dev/null
         $NODE_BIN_DIR/tonos-cli config --url $NETWORK_TYPE &>/dev/null
-        export ELECTOR_TYPE="${ELECTOR_TYPE:=fift}"                      # can be 'solidity' or 'fift'
+        export ELECTOR_TYPE="${ELECTOR_TYPE:=solidity}"                      # can be 'solidity' or 'fift'
         ;;
     *)
         echo "###-ERROR(line $LINENO in echo ${0##*/}): Unknown NETWORK_TYPE (${NETWORK_TYPE})"
@@ -693,14 +693,14 @@ function Elector_ADNL_Search() {
     fi
     elector_addr="$(Get_Elector_Address)"
     if $FORCE_USE_DAPP ;then
-        Elector_Parts_List="$($CALL_TC -j runget ${elector_addr} participant_list_extended)"
-        Elections_Open=`echo $Elector_Parts_List | jq -r '.value0'`
-        if [[ $Elections_Open -eq 0 ]];then
-            echo "null"
-            return
-        fi
         case "${ELECTOR_TYPE}" in
             fift)
+                Elector_Parts_List="$($CALL_TC -j runget ${elector_addr} participant_list_extended)"
+                Elections_Open=`echo $Elector_Parts_List | jq -r '.value0'`
+                if [[ $Elections_Open -eq 0 ]];then
+                    echo "null"
+                    return
+                fi
                 Elector_Parts_List="$(echo $Elector_Parts_List| tr "]]" "\n" | tr '[' '\n' | awk 'NF > 0'| tr '","' ' ')"
                 local found=`echo "${Elector_Parts_List}" | grep -i "0x${ADNL}"`
                 if [[ -z $found ]];then
@@ -714,6 +714,12 @@ function Elector_ADNL_Search() {
                 Result="$stake $time $max_factor $addr"
                 ;;
             solidity)
+                Elector_Parts_List="$($CALL_TC -j run  ${elector_addr} get '{}' --abi ${Elector_ABI})"
+                Elections_Open=`echo $Elector_Parts_List | jq -r '.cur_elect.elect_at'`
+                if [[ $Elections_Open -eq 0 ]];then
+                    echo "null"
+                    return
+                fi
                 local found=`echo "$Elector_Parts_List" | jq ".cur_elect.members[]|select(.adnl_addr == \"0x${ADNL}\")"`
                 if [[ -z $found ]];then
                     echo "absent"
@@ -723,7 +729,8 @@ function Elector_ADNL_Search() {
                 local time="$(echo ${found} |  jq -r .time)"
                 local max_factor="$(echo ${found} | jq -r .max_factor)"
                 local addr="$(echo ${found} | jq -r .addr|cut -d 'x' -f 2)"
-                Result="$stake $time $max_factor $addr"
+                local bls_key="$(echo ${found} | jq -r .bls_key1|cut -d 'x' -f 2)$(echo ${found} | jq -r .bls_key2)"
+                Result="$stake $time $max_factor $addr $bls_key"
                 ;;
             *)
                 echoerr "###-ERROR(${FUNCNAME[0]} line $LINENO): unknown ELECTOR_TYPE (${ELECTOR_TYPE})"
@@ -737,9 +744,9 @@ function Elector_ADNL_Search() {
             echoerr "###-ERROR(${FUNCNAME[0]} line $LINENO): Cannot get Elector state!!"
             exit 1
         fi
-        Elector_Parts_List="$($CALL_TC -j runget --boc ${elector_addr##*:}.boc participant_list_extended)"
         case "${ELECTOR_TYPE}" in
             fift)
+                Elector_Parts_List="$($CALL_TC -j runget --boc ${elector_addr##*:}.boc participant_list_extended)"
                 local Elector_Parts_List="$($CALL_TC runget --boc ${elector_addr##*:}.boc participant_list_extended | grep -i 'result:' | tr "]]" "\n" | tr '[' '\n' | awk 'NF > 0'| tr '","' ' ')"
                 local Elections_Open=`echo $Elector_Parts_List | grep -F '0 0 0 0 null 0 0'`
                 if [[ -n $Elections_Open ]];then
@@ -759,7 +766,7 @@ function Elector_ADNL_Search() {
                 ;;
             solidity)
                 local Elector_Parts_List=`$CALL_TC -j run --boc ${elector_addr##*:}.boc get '{}' --abi ${Elector_ABI}`
-                local Elections_Open=`echo $Elector_Parts_List | jq -r .election_open`
+                local Elections_Open=`echo $Elector_Parts_List | jq -r '.cur_elect.elect_at'`
                 if [[ $Elections_Open -eq 0 ]]; then
                     echo "null"
                     return
@@ -773,7 +780,8 @@ function Elector_ADNL_Search() {
                 local time="$(echo ${found} |  jq -r .time)"
                 local max_factor="$(echo ${found} | jq -r .max_factor)"
                 local addr="$(echo ${found} | jq -r .addr|cut -d 'x' -f 2)"
-                Result="$stake $time $max_factor $addr"
+                local bls_key="$(echo ${found} | jq -r .bls_key1|cut -d 'x' -f 2)$(echo ${found} | jq -r .bls_key2)"
+                Result="$stake $time $max_factor $addr $bls_key"
                 ;;
             *)
                 echoerr "###-ERROR(${FUNCNAME[0]} line $LINENO): unknown ELECTOR_TYPE (${ELECTOR_TYPE})"

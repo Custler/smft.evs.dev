@@ -57,8 +57,8 @@ esac
 
 [[ ! -d $NODE_BIN_DIR ]] && mkdir -p $NODE_BIN_DIR
 
-if [[ -n "$UPD_RNODE_COMMIT" ]] && RNODE_GIT_COMMIT=$UPD_RNODE_COMMIT
-if [[ -n "$UPD_RCONS_COMMIT" ]] && RCONS_GIT_COMMIT=$UPD_RCONS_COMMIT
+[[ -n "$UPD_RNODE_COMMIT" ]] && RNODE_GIT_COMMIT=$UPD_RNODE_COMMIT
+[[ -n "$UPD_RCONS_COMMIT" ]] && RCONS_GIT_COMMIT=$UPD_RCONS_COMMIT
 
 #=====================================================
 # Packages set for different OSes

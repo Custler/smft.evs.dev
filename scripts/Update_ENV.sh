@@ -27,7 +27,7 @@ source "${SCRIPT_DIR}/env.sh"
 
 #################################################################
 # Set rust version
-sed -i.bak "s/export RUST_VERSION=.*/export RUST_VERSION=\"1.63.0\"/" "${SCRIPT_DIR}/env.sh"
+sed -i.bak "s/export RUST_VERSION=.*/export RUST_VERSION=\"1.67.0\"/" "${SCRIPT_DIR}/env.sh"
 
 sed -i.bak "s/export MIN_TC_VERSION=.*/export MIN_TC_VERSION=\"0.28.5\"/" "${SCRIPT_DIR}/env.sh"
 sed -i.bak "/export BOOST_VERSION=.*/d" "${SCRIPT_DIR}/env.sh"

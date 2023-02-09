@@ -26,19 +26,26 @@ SCRIPT_DIR=`cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P`
 source "${SCRIPT_DIR}/env.sh"
 source "${SCRIPT_DIR}/functions.shinc"
 
+Curr_RNODE_Commit=$RNODE_GIT_COMMIT
+Curr_RCONS_Commit=$RCONS_GIT_COMMIT
 #===========================================================
 # Check github for new node release
-Node_local_commit="$(git --git-dir="$RNODE_SRC_DIR/.git" rev-parse HEAD 2>/dev/null)"
-Node_remote_commit="$(git --git-dir="$RNODE_SRC_DIR/.git" ls-remote 2>/dev/null | grep 'HEAD'|awk '{print $1}')"
+Node_local_branch="$(git --git-dir="$RNODE_SRC_DIR/.git" status | grep 'On branch'|awk '{print $3}')"
+Node_local_commit="$(git --git-dir="$RNODE_SRC_DIR/.git" rev-parse HEAD 2>/dev/null|cat)"
+Node_remote_commit="$(git --git-dir="$RNODE_SRC_DIR/.git" ls-remote 2>/dev/null | grep "$Node_local_branch" |awk '{print $1}')"
 Node_bin_commit="$(rnode -V | grep 'NODE git commit' | awk '{print $5}')"
 
-# if settled certain commit (not master) in env.sh 
-[[ "${RNODE_GIT_COMMIT}" != "master" ]] && Node_remote_commit="${RNODE_GIT_COMMIT}"
+Cons_local_branch="$(git --git-dir="$RCONS_SRC_DIR/.git" status | grep 'On branch'|awk '{print $3}')"
+Cons_local_commit="$(git --git-dir="$RCONS_SRC_DIR/.git" rev-parse HEAD 2>/dev/null|cat)"
+Cons_remote_commit="$(git --git-dir="$RCONS_SRC_DIR/.git" ls-remote 2>/dev/null | grep "$Cons_local_branch" |awk '{print $1}')"
+Cons_bin_commit="$(console --verbose | grep 'COMMIT_ID:' | awk '{print $2}')"
 
-if [[ -z $Node_local_commit ]];then
-    echo "###-ERROR(line $LINENO): Cannot get LOCAL node commit!"
-    exit 1
-fi
+# [[ "${RNODE_GIT_COMMIT}" != "master" ]] && Node_remote_commit="${RNODE_GIT_COMMIT}"
+
+# if [[ -z $Node_local_commit ]];then
+#     echo "###-ERROR(line $LINENO): Cannot get LOCAL node commit!"
+#     exit 1
+# fi
 if [[ -z $Node_remote_commit ]];then
     echo "###-ERROR(line $LINENO): Cannot get REMOTE node commit!"
     exit 1
@@ -46,6 +53,28 @@ fi
 if [[ "$Node_bin_commit" !=  "$Node_local_commit" ]];then
     "###-WARNING(line $LINENO): Commit from binary file is not equal git dir commit ($RNODE_SRC_DIR)"
 fi
+
+#===========================================================
+# $UPD_RNODE_COMMIT
+# $UPD_RCONS_COMMIT
+# 
+# if [[ ${#RNODE_GIT_COMMIT} -eq 40 ]] && [[ -z "$(echo $RNODE_GIT_COMMIT | tr -d '[a-f0-9]')" ]];then
+#     # in case RNODE_GIT_COMMIT contains commit hash
+#     if [[ "$Node_bin_commit" == "Node_bin_commit" ]];then
+
+
+# else
+#     # in case RNODE_GIT_COMMIT contains branch name
+    
+# fi
+# #------------------------------------------------------------
+# if [[ ${#RCONS_GIT_COMMIT} -eq 40 ]] && [[ -z "$(echo $RCONS_GIT_COMMIT | tr -d '[a-f0-9]')" ]];then
+#     # in case RNODE_GIT_COMMIT contains commit hash 
+#     echo MATCH
+# else
+#     # in case RNODE_GIT_COMMIT contains branch name
+#     echo Not MATCH
+# fi
 
 #===========================================================
 # Update FreeBSD daemon script to avoide node service stuck

@@ -172,6 +172,9 @@ if [[ -n "$(cat /etc/os-release |grep 'PRETTY_NAME="Oracle Linux Server 9')" ]] 
 fi
 #=====================================================
 # Install or upgrade RUST
+# rustup update stable
+# rustup default stable
+
 echo
 echo '################################################'
 echo "---INFO: Install RUST ${RUST_VERSION}"

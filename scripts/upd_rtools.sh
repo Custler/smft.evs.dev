@@ -2,7 +2,7 @@
 
 BUILD_STRT_TIME=$(date +%s)
 echo
-echo "############################## FreeTON Rnode Tools build script ##################################"
+echo "########################## Everscale Rnode Tools build script ##################################"
 echo "+++INFO: $(basename "$0") BEGIN $(date +%s) / $(date)"
 
 SCRIPT_DIR=`cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P`

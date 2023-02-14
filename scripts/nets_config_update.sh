@@ -31,33 +31,26 @@ echo "Current network is $NETWORK_TYPE"
 GLB_CFG_FNAME="ton-global.config.json"
 TLC_CFG_FNAME="ton-lite-client.config.json"
 
-RustCup_El_ABI_URL="https://raw.githubusercontent.com/tonlabs/rustnet.ton.dev/main/docker-compose/ton-node/configs/Elector.abi.json"
-curl -o ${Elector_ABI} ${RustCup_El_ABI_URL} &>/dev/null
+Sol_El_ABI_URL="https://raw.githubusercontent.com/tonlabs/rustnet.ton.dev/main/docker-compose/ton-node/configs/Elector.abi.json"
+curl -o ${Elector_ABI} ${Sol_El_ABI_URL} &>/dev/null
 
 MAIN_GLB_URL="https://raw.githubusercontent.com/tonlabs/main.ton.dev/master/configs/ton-global.config.json"
 NET_GLB_URL="https://raw.githubusercontent.com/tonlabs/net.ton.dev/master/configs/ton-global.config.json"
 FLD_GLB_URL="https://raw.githubusercontent.com/Everscale-Network/custler.uninode/main/configs/fld.ton.dev/ton-global.config.json"
 RFLD_GLB_URL="https://raw.githubusercontent.com/FreeTON-Network/custler.uninode/main/configs/rfld.ton.dev/ton-global.config.json"
-RST_GLB_URL="https://raw.githubusercontent.com/tonlabs/rustnet.ton.dev/main/configs/ton-global.config.json"
-
-MAIN_TLC_URL="https://raw.githubusercontent.com/tonlabs/main.ton.dev/master/configs/ton-lite-client.config.json"
-NET_TLC_URL="xxx"
-FLD_TLC_URL="https://raw.githubusercontent.com/FreeTON-Network/fld.ton.dev/main/configs/fld.ton.dev/ton-lite-client.config.json"
-RFLD_TLC_URL="xxx"
-RST_TLC_URL="xxx"
+SMFT_GLB_URL="https://raw.githubusercontent.com/Custler/smft.evs.dev/main/configs/smft.evs.dev/ton-global.config.json"
 
 MAIN_CFG_DIR="$CONFIGS_DIR/main.ton.dev"
 NET_CFG_DIR="$CONFIGS_DIR/net.ton.dev"
 FLD_CFG_DIR="$CONFIGS_DIR/fld.ton.dev"
 RFLD_CFG_DIR="$CONFIGS_DIR/rfld.ton.dev"
-RST_CFG_DIR="$CONFIGS_DIR/rustnet.ton.dev"
+SMFT_CFG_DIR="$CONFIGS_DIR/smft.ton.dev"
 
 [[ ! -d $HOME/logs ]] && mkdir -p $HOME/logs
 
-declare -a net_list=($MAIN_CFG_DIR $NET_CFG_DIR $FLD_CFG_DIR $RFLD_CFG_DIR $RST_CFG_DIR)
-declare -a g_url_list=($MAIN_GLB_URL $NET_GLB_URL $FLD_GLB_URL $RFLD_GLB_URL $RST_GLB_URL)
-declare -a t_url_list=($MAIN_TLC_URL $NET_TLC_URL $FLD_TLC_URL $RFLD_TLC_URL $RST_TLC_URL)
-declare -a dir_list=($MAIN_CFG_DIR $NET_CFG_DIR $FLD_CFG_DIR $RFLD_CFG_DIR $RST_CFG_DIR)
+declare -a net_list=($MAIN_CFG_DIR $NET_CFG_DIR $FLD_CFG_DIR $RFLD_CFG_DIR $SMFT_CFG_DIR)
+declare -a g_url_list=($MAIN_GLB_URL $NET_GLB_URL $FLD_GLB_URL $RFLD_GLB_URL $SMFT_GLB_URL)
+declare -a dir_list=($MAIN_CFG_DIR $NET_CFG_DIR $FLD_CFG_DIR $RFLD_CFG_DIR $SMFT_CFG_DIR)
 
 for i in $(seq 0 $((${#g_url_list[@]} - 1)) )
 do
@@ -65,11 +58,6 @@ do
     echo -n "Update global config for ${net_list[i]##*/} network... "
     curl -o ${dir_list[i]}/$GLB_CFG_FNAME ${g_url_list[i]}  &>/dev/null
     echo " ..DONE"
-    if [[ ! "${t_url_list[i]}" == "xxx" ]];then
-        echo -n "Update liteclient config for ${net_list[i]##*/} network... "
-        curl -o ${dir_list[i]}/$TLC_CFG_FNAME ${t_url_list[i]} &>/dev/null
-        echo " ..DONE"
-    fi
 done
 
 ParentScript="$(ps -o command= $PPID |awk -F'/' '{print $2}')"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eE
 
-# (C) Sergey Tyurin  2022-05-18 18:00:00
+# (C) Sergey Tyurin  2023-02-14 12:00:00
 
 # Disclaimer
 ##################################################################################################################
@@ -30,7 +30,7 @@ SCRIPT_DIR=`cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P`
 source "${SCRIPT_DIR}/env.sh"
 
 echo
-echo "################################### FreeTON nodes build script #####################################"
+echo "################################### Everscale nodes build script ###################################"
 echo "+++INFO: $(basename "$0") BEGIN $(date +%s) / $(date)"
 echo "INFO from env: Network: $NETWORK_TYPE; WC: $NODE_WC; Elector: $ELECTOR_TYPE; Staking mode: $STAKE_MODE; Access method: $(if $FORCE_USE_DAPP;then echo "DApp"; else  echo "console"; fi )"
 
@@ -56,10 +56,8 @@ case "$1" in
 esac
 
 [[ ! -d $NODE_BIN_DIR ]] && mkdir -p $NODE_BIN_DIR
-
 [[ -n "$UPD_RNODE_COMMIT" ]] && RNODE_GIT_COMMIT=$UPD_RNODE_COMMIT
 [[ -n "$UPD_RCONS_COMMIT" ]] && RCONS_GIT_COMMIT=$UPD_RCONS_COMMIT
-
 #=====================================================
 # Packages set for different OSes
 PKGS_FreeBSD="git mc jq vim 7-zip libtool perl5 automake llvm-devel gmake wget gawk base64 cmake curl gperf openssl lzlib sysinfo logrotate zstd pkgconf python google-perftools"
@@ -112,8 +110,8 @@ case "$OS_SYSTEM" in
         export ZSTD_LIB_DIR=/usr/lib64
         PKGs_SET=$PKGS_CentOS
         PKG_MNGR=$PKG_MNGR_CentOS
-            $PKG_MNGR config-manager --set-disabled ol8_codeready_builder
-            $PKG_MNGR config-manager --set-disabled ol8_baseos_latest
+        $PKG_MNGR config-manager --set-disabled ol8_codeready_builder
+        $PKG_MNGR config-manager --set-disabled ol8_baseos_latest
         $PKG_MNGR -y update --allowerasing
         $PKG_MNGR group install -y "Development Tools"
         if [[ -n "$(cat /etc/os-release |grep 'VERSION_ID="9.')" ]];then
@@ -141,6 +139,7 @@ case "$OS_SYSTEM" in
         export ZSTD_LIB_DIR=/usr/lib/x86_64-linux-gnu
         PKGs_SET=$PKGS_Ubuntu
         PKG_MNGR=$PKG_MNGR_Ubuntu
+        xxx="$(sudo needrestart -r a -b|cat)"
         $PKG_MNGR install -y software-properties-common
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/ppa
         sudo wget https://github.com/mikefarah/yq/releases/download/v4.13.3/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
@@ -174,7 +173,6 @@ fi
 # Install or upgrade RUST
 # rustup update stable
 # rustup default stable
-
 echo
 echo '################################################'
 echo "---INFO: Install RUST ${RUST_VERSION}"
@@ -193,8 +191,7 @@ if ${RUST_NODE_BUILD};then
     echo -e "${BoldText}${BlueBack}---INFO: RNODE git commit: ${RNODE_GIT_COMMIT} ${NormText}"
 
     [[ -d ${RNODE_SRC_DIR} ]] && rm -rf "${RNODE_SRC_DIR}"
-    # git clone --recurse-submodules "${RNODE_GIT_REPO}" $RNODE_SRC_DIR
-    git clone "${RNODE_GIT_REPO}" "${RNODE_SRC_DIR}"
+    git clone --recursive "${RNODE_GIT_REPO}" "${RNODE_SRC_DIR}"
     cd "${RNODE_SRC_DIR}" 
     git checkout "${RNODE_GIT_COMMIT}"
     git submodule init && git submodule update --recursive
@@ -203,9 +200,12 @@ if ${RUST_NODE_BUILD};then
 
     cd $RNODE_SRC_DIR
 
-    sed -i.bak 's%features = \[\"cmake_build\", \"dynamic_linking\"\]%features = \[\"cmake_build\"\]%g' Cargo.toml
+    # sed -i.bak 's|features = \[\"cmake_build\", \"dynamic_linking\"\]|features = \[\"cmake_build\"\]|g' Cargo.toml
     #====== Uncomment to disabe node's logs competely
     # sed -i.bak 's%log = '0.4'%log = { version = "0.4", features = ["release_max_level_off"] }%'  Cargo.toml
+
+    rm -rf ~/.cargo/git/checkouts/ton-labs-*
+    rm -rf ~/.cargo/git/checkouts/ever-*
 
     cargo update
 
@@ -214,11 +214,7 @@ if ${RUST_NODE_BUILD};then
     # block version
     export NODE_BLK_VER=$(cat $RNODE_SRC_DIR/src/validating_utils.rs |grep -A1 'supported_version'|tail -1|tr -d ' ')
 
-    # patch main.rs
-    # sed -i.bak -e '/TON NODE git commit:         {}\\n\\/p; s/TON NODE git commit:         {}\\n\\/Node block version:          {}\\n\\/' $RNODE_SRC_DIR/src/main.rs
-    # sed -i.bak -e '/std::option_env!("GC_TON_NODE").unwrap_or("Not set"),/p; s/std::option_env!("GC_TON_NODE").unwrap_or("Not set"),/std::option_env!("NODE_BLK_VER").unwrap_or("Not set"),/' $RNODE_SRC_DIR/src/main.rs
-
-    echo -e "${BoldText}${BlueBack}---INFO: RNODE build flags: ${RNODE_FEATURES} commit: ${GC_RNODE} Block version: ${NODE_BLK_VER}${NormText}"
+    echo -e "${BoldText}${BlueBack}---INFO: RNODE build flags: ${RNODE_FEATURES} commit: ${GC_TON_NODE} Block version: ${NODE_BLK_VER}${NormText}"
     RUSTFLAGS="-C target-cpu=native" cargo build --release --features "${RNODE_FEATURES}"
 
     # cp $NODE_BIN_DIR/rnode $NODE_BIN_DIR/rnode_${BackUP_Time}|cat
@@ -232,7 +228,7 @@ if ${RUST_NODE_BUILD};then
     echo -e "${BoldText}${BlueBack}---INFO: RCONS git commit: ${RCONS_GIT_COMMIT} ${NormText}"
 
     [[ -d ${RCONS_SRC_DIR} ]] && rm -rf "${RCONS_SRC_DIR}"
-    git clone --recurse-submodules "${RCONS_GIT_REPO}" $RCONS_SRC_DIR
+    git clone --recursive "${RCONS_GIT_REPO}" $RCONS_SRC_DIR
     cd $RCONS_SRC_DIR
     git checkout "${RCONS_GIT_COMMIT}"
     git submodule init && git submodule update --recursive
@@ -256,19 +252,16 @@ echo -e "${BoldText}${BlueBack}---INFO: TONOS git repo:   ${TONOS_CLI_GIT_REPO} 
 echo -e "${BoldText}${BlueBack}---INFO: TONOS git commit: ${TONOS_CLI_GIT_COMMIT} ${NormText}"
 
 [[ -d ${TONOS_CLI_SRC_DIR} ]] && rm -rf "${TONOS_CLI_SRC_DIR}"
-git clone --recurse-submodules "${TONOS_CLI_GIT_REPO}" "${TONOS_CLI_SRC_DIR}"
+git clone --recursive "${TONOS_CLI_GIT_REPO}" "${TONOS_CLI_SRC_DIR}"
 cd "${TONOS_CLI_SRC_DIR}"
 git checkout "${TONOS_CLI_GIT_COMMIT}"
 git submodule init && git submodule update --recursive
 git submodule foreach 'git submodule init'
 git submodule foreach 'git submodule update  --recursive'
-
 cargo update
-
 export GC_TONOS="$(git --git-dir="$TONOS_CLI_SRC_DIR/.git" rev-parse HEAD 2>/dev/null)"
 echo -e "${BoldText}${BlueBack}---INFO: TONOS build flags: ${TONOS_CLI_FEATURES} commit: ${GC_TONOS}${NormText}"
 RUSTFLAGS="-C target-cpu=native" cargo build --release --features "${TONOS_CLI_FEATURES}"
-
 # cp $NODE_BIN_DIR/tonos-cli $NODE_BIN_DIR/tonos-cli_${BackUP_Time}|cat
 cp "${TONOS_CLI_SRC_DIR}/target/release/tonos-cli" "$NODE_BIN_DIR/"
 echo "---INFO: build tonos-cli ... DONE"
@@ -277,7 +270,7 @@ echo "---INFO: build tonos-cli ... DONE"
 # Build TON Solidity Compiler (solc)
 # echo "---INFO: build TON Solidity Compiler ..."
 # [[ ! -z ${SOLC_SRC_DIR} ]] && rm -rf "${SOLC_SRC_DIR}"
-# git clone --recurse-submodules "${SOLC_GIT_REPO}" "${SOLC_SRC_DIR}"
+# git clone --recursive "${SOLC_GIT_REPO}" "${SOLC_SRC_DIR}"
 # cd "${SOLC_SRC_DIR}"
 # git checkout "${SOLC_GIT_COMMIT}"
 # mkdir ${SOLC_SRC_DIR}/build
@@ -299,7 +292,7 @@ echo "---INFO: build tonos-cli ... DONE"
 # echo '################################################'
 # echo "---INFO: build TVM-linker ..."
 # [[ ! -z ${TVM_LINKER_SRC_DIR} ]] && rm -rf "${TVM_LINKER_SRC_DIR}"
-# git clone --recurse-submodules "${TVM_LINKER_GIT_REPO}" "${TVM_LINKER_SRC_DIR}"
+# git clone --recursive "${TVM_LINKER_GIT_REPO}" "${TVM_LINKER_SRC_DIR}"
 # cd "${TVM_LINKER_SRC_DIR}"
 # git checkout "${TVM_LINKER_GIT_COMMIT}"
 # cd "${TVM_LINKER_SRC_DIR}/tvm_linker"
@@ -320,7 +313,7 @@ git checkout $CONTRACTS_GIT_COMMIT
 cd ${NODE_TOP_DIR}
 git clone --single-branch --branch ${Surf_GIT_Commit} ${CONTRACTS_GIT_REPO} "${ContractsDIR}/Surf-contracts"
 
-curl -o ${Elector_ABI} ${RustCup_El_ABI_URL} &>/dev/null
+# curl -o ${Elector_ABI} ${RustCup_El_ABI_URL} &>/dev/null
 
 #=====================================================
 # Check reboot required after update
@@ -344,7 +337,7 @@ curl -o ${Elector_ABI} ${RustCup_El_ABI_URL} &>/dev/null
 #     *)
 #         ;;
 # esac
-
+rm -f wget-log*
 echo 
 echo '################################################'
 BUILD_END_TIME=$(date +%s)

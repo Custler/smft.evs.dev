@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# (C) Sergey Tyurin  2022-11-07 13:00:00
+# (C) Sergey Tyurin  2023-02-07 13:00:00
 
 # Disclaimer
 ##################################################################################################################
@@ -39,8 +39,8 @@ export LNIC_ADDRESS="0:bdcefecaae5d07d926f1fa881ea5b61d81ea748bd02136c0dbe766043
 
 #=====================================================
 # Network related variables
-export NETWORK_TYPE="smft.evs.dev"      # can be main.* / net.* / fld.* / rfld.* / smft.* / gosh.*
-export Node_Blk_Min_Ver=32
+export NETWORK_TYPE="smft.evs.dev"      # can be main.* / net.* / fld.* / rfld.* / smft.* 
+export Node_Blk_Min_Ver=35
 export ELECTOR_TYPE="solidity"
 export NODE_WC=0                        # Node WorkChain 
 
@@ -67,17 +67,14 @@ export FLD_DApp_List="https://gql.custler.net"
 export RFLD_DApp_URL="https://rfld-dapp.itgold.io"
 export RFLD_DApp_List="https://rfld-dapp.itgold.io"
 
-export RustNet_DApp_URL="https://rustnet.ton.dev"
-export RustNet_DApp_List="https://rustnet1.ton.dev"
-
 export SMFT_DApp_URL="https://dapp-test.itgold.io"
 export SMFT_DApp_List="https://dapp-test.itgold.io"
 
 #=====================================================
 # Depool deploy defaults
-export ValidatorAssuranceT=500000       # Assurance in tokens
+export ValidatorAssuranceT=50000       # Assurance in tokens
 export MinStakeT=10                     # Min DePool assepted stake in tokens
-export ParticipantRewardFraction=80     # In % participant share from reward
+export ParticipantRewardFraction=85     # In % participant share from reward
 export BalanceThresholdT=20             # Min depool self balance to operate
 export TIK_REPLANISH_AMOUNT=10          # If Tik acc balance less 2 tokens, It will be auto topup with this amount
 
@@ -101,7 +98,6 @@ export MAIN_NET_ID="58FFCA1A178DAFF7"
 export  DEV_NET_ID="B2E99A7505EDA599"
 export  FLD_NET_ID="F6176FF8E2CA6E5D"
 export RFLD_NET_ID="AA183E8917635635"
-export  RST_NET_ID="228F05E8BCB11DEF"
 export SMFT_NET_ID="778F05E8BCB11DEF"
 
 #=====================================================
@@ -127,7 +123,7 @@ done
 export NODE_IP_ADDR
 
 export ServiceName="tonnode"
-export ADNL_PORT="45555"
+export ADNL_PORT="45555"                            
 export NODE_ADDRESS="${NODE_IP_ADDR}:${ADNL_PORT}"
 export RCONSOLE_PORT="5031"
 export STATSD_DOMAIN=localhost:
@@ -135,19 +131,19 @@ export STATSD_PORT=9125
 
 #=====================================================
 # GIT addresses & commits
-export RUST_VERSION="1.67.0"
-export MIN_TC_VERSION="0.28.5"
-export MIN_RC_VERSION="0.1.286"
+export RUST_VERSION="1.67.1"
+export MIN_TC_VERSION="0.32.00"
+export MIN_RC_VERSION="0.1.300"
 # for corect work automatic update 
 # GIT_COMMIT should be "master" or certain commit only
 # not a branch name!
 
 case "${NETWORK_TYPE%%.*}" in 
     main)
-        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ever-node.git"
         export RNODE_GIT_COMMIT="master"
         export RNODE_FEATURES=""
-        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ever-node-tools.git"
         export RCONS_GIT_COMMIT="master"
         export RCONS_FEATURES=""
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
@@ -155,10 +151,10 @@ case "${NETWORK_TYPE%%.*}" in
         export TONOS_CLI_FEATURES=""
         ;;
     net | devnet)
-        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ever-node.git"
         export RNODE_GIT_COMMIT="master"
         export RNODE_FEATURES=""
-        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ever-node-tools.git"
         export RCONS_GIT_COMMIT="master"
         export RCONS_FEATURES=""
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
@@ -166,22 +162,22 @@ case "${NETWORK_TYPE%%.*}" in
         export TONOS_CLI_FEATURES=""
         ;;
     fld)
-        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ever-node.git"
         export RNODE_GIT_COMMIT="remp-dev"
         export RNODE_FEATURES=""
-        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
-        export RCONS_GIT_COMMIT="master"
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ever-node-tools.git"
+        export RCONS_GIT_COMMIT="remp-dev"
         export RCONS_FEATURES=""
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
         export TONOS_CLI_GIT_COMMIT="master"
         export TONOS_CLI_FEATURES=""
         ;;
     rfld)
-        export RNODE_GIT_REPO="https://github.com/tonlabs/ton-labs-node.git"
+        export RNODE_GIT_REPO="https://github.com/tonlabs/ever-node.git"
         export RNODE_GIT_COMMIT="tmp-rc"
         export RNODE_FEATURES=""
-        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
-        export RCONS_GIT_COMMIT="master"
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ever-node-tools.git"
+        export RCONS_GIT_COMMIT="tmp-rc"
         export RCONS_FEATURES=""
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
         export TONOS_CLI_GIT_COMMIT="master"
@@ -197,13 +193,12 @@ case "${NETWORK_TYPE%%.*}" in
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
         export TONOS_CLI_GIT_COMMIT="consensus-updates"
         export TONOS_CLI_FEATURES=""
-#        export NET_GLOBAL_CONFIG_FILE="everscale-global.config.json"
         ;;
     gosh)
         export RNODE_GIT_REPO="https://github.com/tonlabs/ever-node.git"
         export RNODE_GIT_COMMIT="master"
         export RNODE_FEATURES="gosh"
-        export RCONS_GIT_REPO="https://github.com/tonlabs/ton-labs-node-tools.git"
+        export RCONS_GIT_REPO="https://github.com/tonlabs/ever-node-tools.git"
         export RCONS_GIT_COMMIT="master"
         export RCONS_FEATURES=""
         export TONOS_CLI_GIT_REPO="https://github.com/tonlabs/tonos-cli.git"
@@ -218,12 +213,14 @@ esac
 
 export TVM_LINKER_GIT_REPO="https://github.com/tonlabs/TVM-linker.git"
 export TVM_LINKER_GIT_COMMIT="master"
+
 export SOLC_GIT_REPO="https://github.com/tonlabs/TON-Solidity-Compiler.git"
 export SOLC_GIT_COMMIT="master"
+
 export CONTRACTS_GIT_REPO="https://github.com/tonlabs/ton-labs-contracts.git"
 export CONTRACTS_GIT_COMMIT="master"
+
 export Surf_GIT_Commit="multisig-surf-v2"
-export RustCup_El_ABI_URL="https://raw.githubusercontent.com/tonlabs/rustnet.ton.dev/main/docker-compose/ton-node/configs/Elector.abi.json"
 
 #=====================================================
 # Source code folders
@@ -238,6 +235,7 @@ export SOLC_SRC_DIR="${NODE_TOP_DIR}/SolC"
 # Work folders for db, keys and conf
 export NODE_BIN_DIR=$HOME/bin
 export NET_GLOBAL_CONFIG_FILE="ton-global.config.json"
+
 #WRK_DIR=/dev/shm   # ramdisk in linux only for fast initial sync
 WRK_DIR=/var
 

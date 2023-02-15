@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# (C) Sergey Tyurin  2022-11-07 13:00:00
+# (C) Sergey Tyurin  2023-02-15 10:00:00
 
 # Disclaimer
 ##################################################################################################################
@@ -25,7 +25,6 @@
 # hex2dec()
 # dec2hex()
 # TD_unix2human()
-# Check_DApp_URL()
 # Get_SC_current_state()
 # Get_TimeDiff() 
 # Get_Elector_Address()
@@ -244,32 +243,6 @@ function TD_unix2human() {
         echo "$(date -r $ival +'%F %T %Z')"
     fi
 }
-#=================================================
-# Check DApp URL in tonos-cli.conf.json correspond to NetworkType
-#   Output:
-#      fine
-#      does not match
-#      unreachable
-function Check_DApp_URL() {
-    local result="does not match"
-    local url_in_tccj="$(cat ./tonos-cli.conf.json | jq -r .url | cut -d '/' -f 3)"
-    local net_in_env=${NETWORK_TYPE}
-    if [[ "${NETWORK_TYPE}" == "fld.ton.dev" ]] && [[ "${url_in_tccj}" != "gql.custler.net"  ]];then
-        echo "${result}"
-        return
-    elif [[ "${NETWORK_TYPE}" != "${url_in_tccj}" ]] && [[ "${NETWORK_TYPE}" != "fld.ton.dev" ]];then
-        echo "${result}"
-        return
-    fi
-    local Net_Zero_Block_Check=$(curl -sS -X POST -g -H "Content-Type: application/json" ${DApp_URL}/graphql \
-    -d '{"query": "query {blocks(filter: {seq_no:{eq: 1},workchain_id:{eq:-1}}) {boc}}"}' 2>/dev/null \
-    |jq -r '.data.blocks[]|length' 2>/dev/null)
-    if [[ $Net_Zero_Block_Check -ne 1 ]];then
-        echo "unreachable"
-        return
-    fi
-    echo "fine"
-}
 
 #=================================================
 # Get Smart Contract current state by dowloading it & save to file
@@ -446,11 +419,16 @@ function get_LastNodeInfo {
 #=================================================
 # Get supported blocks versions from node and network
 # Input: 
-# Return: netBlkVer NodeBlkVer_fromGit NodeBlkVer_from_Bin
+# Return: Net_Min_Sup_Blk NodeGit_Sup_Blk NodeBin_Sup_Blk NodeRun_Version
+#   - Net_Min_Sup_Blk - from network config
+#   - NodeGit_Sup_Blk - from local git repo
+#   - NodeBin_Sup_Blk - from binary file (rnode -V)
+#   - NodeRun_Version - Node version received from the running service via the console (in text - "0.51.27")
 function Get_Supported_Blocks_Version() {
     local -i Net_Min_Sup_Blk=0
     local -i NodeGit_Sup_Blk=0
     local -i NodeBin_Sup_Blk=0
+    local NodeRun_Version="0"
     # get net supported_block
     if $FORCE_USE_DAPP ;then
         Net_Min_Sup_Blk=`$CALL_TC -j getconfig 8 | jq -r '.version'`
@@ -462,10 +440,14 @@ function Get_Supported_Blocks_Version() {
         return 1
     fi
     # get Git supported_block
-    NodeGit_Sup_Blk=`cat ${RNODE_SRC_DIR}/src/validating_utils.rs 2>/dev/null|grep -A1 'supported_version'|tail -1|tr -d ' '`
+    NodeGit_Sup_Blk=`awk '/pub fn supported_version/ {getline;print $1}' ${RNODE_SRC_DIR}/src/validating_utils.rs`
     # get supported_block from binary
-    NodeBin_Sup_Blk=`. ./env.sh && ${CALL_RN%% *} -V | grep 'Node block version' | awk '{print $4}'`
-    echo "${Net_Min_Sup_Blk} ${NodeGit_Sup_Blk} ${NodeBin_Sup_Blk}"
+    NodeBin_Sup_Blk=`. ./env.sh && ${CALL_RN%% *} -V | grep 'BLOCK_VERSION:' | awk '{print $2}'`
+    local RC_OUT=$($CALL_RC -jc getstats 2>/dev/null|cat|jq -r '.node_version' 2>/dev/null|cat)
+    if [[ -n $RC_OUT ]] && [[ "$RC_OUT" != "null" ]];then
+        NodeRun_Version=$RC_OUT
+    fi
+    echo "${Net_Min_Sup_Blk} ${NodeGit_Sup_Blk} ${NodeBin_Sup_Blk} ${NodeRun_Version}"
 }
 #=================================================
 # Get account INFO
@@ -642,10 +624,10 @@ function Get_Engine_ADNL() {
     local Result="null"
     local Curr_Engine_Val_Keys=`cat ${R_CFG_DIR}/config.json | jq .validator_keys`
     [[ "$Curr_Engine_Val_Keys" == "null" ]] && echo "$Result" && return
-    local BLS_0=`echo $Curr_Engine_Val_Keys  | jq -r .[0].validator_bls_key`
+    local BLS_0=`echo $Curr_Engine_Val_Keys  | jq -r .[0].validator_bls_key | cat`
     local ADNL_0=`echo $Curr_Engine_Val_Keys | jq -r .[0].validator_adnl_key_id`
     local Elec_0=`echo $Curr_Engine_Val_Keys | jq -r .[0].election_id`
-    local BLS_1=`echo $Curr_Engine_Val_Keys  | jq -r .[1].validator_bls_key`
+    local BLS_1=`echo $Curr_Engine_Val_Keys  | jq -r .[1].validator_bls_key |cat `
     local ADNL_1=`echo $Curr_Engine_Val_Keys | jq -r .[1].validator_adnl_key_id`
     local Elec_1=`echo $Curr_Engine_Val_Keys | jq -r .[1].election_id`
     if [[ "$ADNL_0" == "null" ]];then
@@ -714,7 +696,7 @@ function Elector_ADNL_Search() {
                 Result="$stake $time $max_factor $addr"
                 ;;
             solidity)
-                Elector_Parts_List="$($CALL_TC -j run  ${elector_addr} get '{}' --abi ${Elector_ABI})"
+                Elector_Parts_List="$($CALL_TC -j run  ${elector_addr} get '{}' --abi ${Elector_ABI})" 
                 Elections_Open=`echo $Elector_Parts_List | jq -r '.cur_elect.elect_at'`
                 if [[ $Elections_Open -eq 0 ]];then
                     echo "null"
@@ -729,7 +711,7 @@ function Elector_ADNL_Search() {
                 local time="$(echo ${found} |  jq -r .time)"
                 local max_factor="$(echo ${found} | jq -r .max_factor)"
                 local addr="$(echo ${found} | jq -r .addr|cut -d 'x' -f 2)"
-                local bls_key="$(echo ${found} | jq -r .bls_key1|cut -d 'x' -f 2)$(echo ${found} | jq -r .bls_key2)"
+                local bls_key="$(echo ${found} | jq -r .bls_key1|cut -d 'x' -f 2)$(echo ${found} | jq -r .bls_key2 | cat)"
                 Result="$stake $time $max_factor $addr $bls_key"
                 ;;
             *)
@@ -780,7 +762,7 @@ function Elector_ADNL_Search() {
                 local time="$(echo ${found} |  jq -r .time)"
                 local max_factor="$(echo ${found} | jq -r .max_factor)"
                 local addr="$(echo ${found} | jq -r .addr|cut -d 'x' -f 2)"
-                local bls_key="$(echo ${found} | jq -r .bls_key1|cut -d 'x' -f 2)$(echo ${found} | jq -r .bls_key2)"
+                local bls_key="$(echo ${found} | jq -r .bls_key1|cut -d 'x' -f 2)$(echo ${found} | jq -r .bls_key2|cat)"
                 Result="$stake $time $max_factor $addr $bls_key"
                 ;;
             *)

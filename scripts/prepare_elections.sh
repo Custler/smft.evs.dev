@@ -114,7 +114,7 @@ if [[ "$STAKE_MODE" == "msig" ]];then
             recover_amount=$($CALL_TC runget --boc ${elector_addr##*:}.boc compute_returned_stake 0x${Val_Adrr_HEX} 2>&1 | grep "Result:" | awk -F'"' '{print $2}')
             ;;
         "solidity")
-            recover_amount=$($CALL_TC run --boc ${elector_addr##*:}.boc compute_returned_stake "{\"wallet_addr\":\"${Val_Adrr_HEX}\"}" --abi ${Elector_ABI} 2>&1 | grep -i "value0" | awk '{print $2}' | tr -d '"')
+            recover_amount=$($CALL_TC -j run --boc ${elector_addr##*:}.boc compute_returned_stake "{\"wallet_addr\":\"0x${Val_Adrr_HEX}\"}" --abi ${Elector_ABI} 2>&1 | jq -r '.value0')
             ;;
         *)
             echo "###-ERROR(line $LINENO): Unknown Elector type! Set ELECTOR_TYPE= to 'fift' or 'solidity' in env.sh"

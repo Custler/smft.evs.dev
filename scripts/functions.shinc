@@ -129,6 +129,40 @@ case "$NetName" in
 esac
 
 # =====================================================
+# Determine current network Config contract
+# get seqno for func or pubkey for sol
+CONFIG_TYPE="unknown"
+Get_Curr_Conf_State
+set +eE
+Curr_SEQNO=$($CALL_TC -j runget --boc $NET_CONF_BOC seqno 2>/dev/null | cat | jq -r '.value0' | grep '[0-9]')
+ConfPubKey="$($CALL_TC -j run --boc $NET_CONF_BOC public_key '{}' --abi $ORIG_CONF_ABI 2>/dev/null | cat | jq -r '.value0' | grep '[0-9]')"
+set -eE
+if [[ -n "$Curr_SEQNO" ]] && [[ -z "$ConfPubKey" ]];then
+    export CONFIG_TYPE="FUNC"
+elif [[ -z "$Curr_SEQNO" ]] && [[ -n "$ConfPubKey" ]];then
+    export CONFIG_TYPE="SOLIDITY"
+fi
+if [[ "$CONFIG_TYPE" == "unknown" ]];then
+    echo "###-ERROR(${FUNCNAME[0]} line $LINENO): Cannot determine Config type!"
+    exit 1
+fi
+# =====================================================
+# Determine current network Elector contract
+ELECTOR_TYPE="unknown"
+FUNC_TC_OUT="$($CALL_TC  runget --boc ${NET_ELECTOR_BOC} active_election_id 2>&1| grep 'unknown error'|cat)"
+echo "FUNC_TC_OUT: $FUNC_TC_OUT"
+SOL_TC_OUT="$($CALL_TC -j run --boc ${NET_ELECTOR_BOC} active_election_id '{}' --abi ${ORIG_SolElector_ABI} 2>&1|grep 'unknown error'|cat)"
+echo "SOL_TC_OUT: $SOL_TC_OUT"
+if [[ -n $FUNC_TC_OUT ]] && [[ -z $SOL_TC_OUT ]];then
+    ELECTOR_TYPE="SOLIDITY"
+elif [[ -z $FUNC_TC_OUT ]] && [[ -n $SOL_TC_OUT ]];then
+    ELECTOR_TYPE="FUNC"
+fi
+if [[ "$ELECTOR_TYPE" == "unknown" ]];then
+    echo "###-ERROR(line $LINENO): Cannot determine Elector type!"
+    exit 1
+fi
+# =====================================================
 #
 function Determine_Current_Network() {
     # get current network zerostate

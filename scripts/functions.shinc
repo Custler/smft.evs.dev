@@ -129,40 +129,6 @@ case "$NetName" in
 esac
 
 # =====================================================
-# Determine current network Config contract
-# get seqno for func or pubkey for sol
-CONFIG_TYPE="unknown"
-Get_Curr_Conf_State
-set +eE
-Curr_SEQNO=$($CALL_TC -j runget --boc $NET_CONF_BOC seqno 2>/dev/null | cat | jq -r '.value0' | grep '[0-9]')
-ConfPubKey="$($CALL_TC -j run --boc $NET_CONF_BOC public_key '{}' --abi $ORIG_CONF_ABI 2>/dev/null | cat | jq -r '.value0' | grep '[0-9]')"
-set -eE
-if [[ -n "$Curr_SEQNO" ]] && [[ -z "$ConfPubKey" ]];then
-    export CONFIG_TYPE="FUNC"
-elif [[ -z "$Curr_SEQNO" ]] && [[ -n "$ConfPubKey" ]];then
-    export CONFIG_TYPE="SOLIDITY"
-fi
-if [[ "$CONFIG_TYPE" == "unknown" ]];then
-    echo "###-ERROR(${FUNCNAME[0]} line $LINENO): Cannot determine Config type!"
-    exit 1
-fi
-# =====================================================
-# Determine current network Elector contract
-ELECTOR_TYPE="unknown"
-FUNC_TC_OUT="$($CALL_TC  runget --boc ${NET_ELECTOR_BOC} active_election_id 2>&1| grep 'unknown error'|cat)"
-echo "FUNC_TC_OUT: $FUNC_TC_OUT"
-SOL_TC_OUT="$($CALL_TC -j run --boc ${NET_ELECTOR_BOC} active_election_id '{}' --abi ${ORIG_SolElector_ABI} 2>&1|grep 'unknown error'|cat)"
-echo "SOL_TC_OUT: $SOL_TC_OUT"
-if [[ -n $FUNC_TC_OUT ]] && [[ -z $SOL_TC_OUT ]];then
-    ELECTOR_TYPE="SOLIDITY"
-elif [[ -z $FUNC_TC_OUT ]] && [[ -n $SOL_TC_OUT ]];then
-    ELECTOR_TYPE="FUNC"
-fi
-if [[ "$ELECTOR_TYPE" == "unknown" ]];then
-    echo "###-ERROR(line $LINENO): Cannot determine Elector type!"
-    exit 1
-fi
-# =====================================================
 #
 function Determine_Current_Network() {
     # get current network zerostate
@@ -1074,3 +1040,77 @@ function Send_File_To_BC() {
     fi
     echo "${Result}"
 }
+
+# =====================================================
+# Determine current network Config contract
+# get seqno for func or pubkey for sol
+CONFIG_TYPE="unknown"
+# get config address
+if $FORCE_USE_DAPP ;then
+    TC_OUT="$($CALL_TC -j getconfig 0|jq -r '')"
+else
+    TC_OUT="$($CALL_RC -jc 'getconfig 0'|jq -r '.p0')"
+fi
+if [[ ${#TC_OUT} -ne 64 ]];then
+    echo "###-ERROR(${FUNCNAME[0]} line $LINENO): Can't get config contract address. DApp url or network doesn't work."
+    return
+fi
+Config_Contract_Addr="-1:${TC_OUT}"
+
+# Get config State
+NET_CONF_BOC="curr_config.boc"
+Get_SC_current_state "$Config_Contract_Addr" > /dev/null
+mv -f "${TC_OUT}.boc" "${NET_CONF_BOC}"
+
+# detect type of config contract
+set +eE
+Curr_SEQNO=$($CALL_TC -j runget --boc $NET_CONF_BOC seqno 2>/dev/null | cat | jq -r '.value0' | grep '[0-9]')
+ConfPubKey="$($CALL_TC -j run --boc $NET_CONF_BOC public_key '{}' --abi $Config_ABI 2>/dev/null | cat | jq -r '.value0' | grep '[0-9]')"
+set -eE
+if [[ -n "$Curr_SEQNO" ]] && [[ -z "$ConfPubKey" ]];then
+    export CONFIG_TYPE="fift"
+    sed -i.fnc 's|^export CONFIG_TYPE=.*|export CONFIG_TYPE="fift"|' env.sh
+elif [[ -z "$Curr_SEQNO" ]] && [[ -n "$ConfPubKey" ]];then
+    export CONFIG_TYPE="solidity"
+    sed -i.fnc 's|^export CONFIG_TYPE=.*|export CONFIG_TYPE="solidity"|' env.sh
+fi
+if [[ "$CONFIG_TYPE" == "unknown" ]];then
+    echo "###-ERROR(${FUNCNAME[0]} line $LINENO): Cannot determine Config type!"
+    return
+fi
+# =====================================================
+# Determine current network Elector contract
+ELECTOR_TYPE="unknown"
+# get elector address
+if $FORCE_USE_DAPP ;then
+    TC_OUT="$($CALL_TC -j getconfig 1|jq -r '')"
+else
+    TC_OUT="$($CALL_RC -jc 'getconfig 1'|jq -r '.p1')"
+fi
+if [[ ${#TC_OUT} -ne 64 ]];then
+    echo "###-ERROR(${FUNCNAME[0]} line $LINENO): Can't get elector contract address. DApp url or network doesn't work."
+    return
+fi
+Elector_Addr="-1:${TC_OUT}"
+
+# get elector state
+Get_SC_current_state "$Elector_Addr" > /dev/null
+NET_ELECTOR_BOC="curr_elector.boc"
+mv -f "${TC_OUT}.boc" "${NET_ELECTOR_BOC}"
+
+# detect type of elector contract
+set +eE
+FUNC_TC_OUT="$($CALL_TC  runget --boc ${NET_ELECTOR_BOC} active_election_id 2>&1 | cat | grep -i 'unknown error')"
+SOL_TC_OUT="$($CALL_TC -j run --boc ${NET_ELECTOR_BOC} active_election_id '{}' --abi $Elector_ABI 2>&1 | cat | grep -i 'unknown error')"
+set -eE
+if [[ -n $FUNC_TC_OUT ]] && [[ -z $SOL_TC_OUT ]];then
+    ELECTOR_TYPE="solidity"
+    sed -i.fnc 's|^export ELECTOR_TYPE=.*|export ELECTOR_TYPE="solidity"|' env.sh
+elif [[ -z $FUNC_TC_OUT ]] && [[ -n $SOL_TC_OUT ]];then
+    ELECTOR_TYPE="fift"
+    sed -i.fnc 's|^export ELECTOR_TYPE=.*|export ELECTOR_TYPE="fift"|' env.sh
+fi
+if [[ "$ELECTOR_TYPE" == "unknown" ]];then
+    echo "###-ERROR(${FUNCNAME[0]} line $LINENO): Cannot determine Elector type!"
+    return
+fi

@@ -41,7 +41,8 @@ export LNIC_ADDRESS="0:bdcefecaae5d07d926f1fa881ea5b61d81ea748bd02136c0dbe766043
 # Network related variables
 export NETWORK_TYPE="smft.evs.dev"      # can be main.* / net.* / fld.* / rfld.* / smft.* 
 export Node_Blk_Min_Ver=35
-export ELECTOR_TYPE="solidity"
+export ELECTOR_TYPE="fift"          # can be fift or solidity
+export CONFIG_TYPE="fift"           # can be fift or solidity
 export NODE_WC=0                        # Node WorkChain 
 
 export FORCE_USE_DAPP=false             # For offnode works or to use DApp Server instead of use node's console to operate
@@ -257,18 +258,18 @@ export KEYS_DIR="$HOME/ton-keys"
 export ELECTIONS_WORK_DIR="${KEYS_DIR}/elections"
 export ELECTIONS_HISTORY_DIR="${KEYS_DIR}/elections_hist"
 
+# deprecated & missing
+export TON_SRC_DIR="${NODE_TOP_DIR}/cnode"
 export CRYPTO_DIR=$TON_SRC_DIR/crypto
+export FSCs_DIR="${CRYPTO_DIR}/smartcont"
+export FIFT_LIB="${CRYPTO_DIR}/fift/lib"
 
 #=====================================================
 # Smart contracts paths
 export ContractsDIR="${NODE_TOP_DIR}/ton-labs-contracts"
 
 export DSCs_DIR="${ContractsDIR}/solidity/depool"
-# [[ "${NETWORK_TYPE%%.*}" == "rfld" ]] && export DSCs_DIR="${CONFIGS_DIR}/depool_RFLD"
 export DePool_ABI="$DSCs_DIR/DePool.abi.json"
-
-export FSCs_DIR="${CRYPTO_DIR}/smartcont"
-export FIFT_LIB="${CRYPTO_DIR}/fift/lib"
 
 export SafeSCs_DIR="${ContractsDIR}/solidity/safemultisig"
 export SafeC_Wallet_ABI="${ContractsDIR}/solidity/safemultisig/SafeMultisigWallet.abi.json"
@@ -280,7 +281,9 @@ export SURF_ABI="$NODE_SRC_TOP_DIR/Surf-contracts/solidity/surfmultisig/SurfMult
 export SURF_TVC="$NODE_SRC_TOP_DIR/Surf-contracts/solidity/surfmultisig/SurfMultisigWallet.tvc"
 
 export Marvin_ABI="${CONFIGS_DIR}/Marvin.abi.json"
-export Elector_ABI="${CONFIGS_DIR}/Elector.abi.json"
+
+export Elector_ABI="${ContractsDIR}/solidity/elector/Elector.abi.json"
+export Config_ABI="${ContractsDIR}/solidity/elector/Config.abi.json"
 
 #=====================================================
 # Executables

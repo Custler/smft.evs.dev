@@ -1063,10 +1063,12 @@ Get_SC_current_state "$Config_Contract_Addr" > /dev/null
 mv -f "${TC_OUT}.boc" "${NET_CONF_BOC}"
 
 # detect type of config contract
+SAVED_OPTIONS=$(set +o)
 set +eE
 Curr_SEQNO=$($CALL_TC -j runget --boc $NET_CONF_BOC seqno 2>/dev/null | cat | jq -r '.value0' | grep '[0-9]')
 ConfPubKey="$($CALL_TC -j run --boc $NET_CONF_BOC public_key '{}' --abi $Config_ABI 2>/dev/null | cat | jq -r '.value0' | grep '[0-9]')"
 set -eE
+eval "$SAVED_OPTIONS"
 if [[ -n "$Curr_SEQNO" ]] && [[ -z "$ConfPubKey" ]];then
     export CONFIG_TYPE="fift"
     sed -i.fnc 's|^export CONFIG_TYPE=.*|export CONFIG_TYPE="fift"|' env.sh
@@ -1099,10 +1101,12 @@ NET_ELECTOR_BOC="curr_elector.boc"
 mv -f "${TC_OUT}.boc" "${NET_ELECTOR_BOC}"
 
 # detect type of elector contract
+SAVED_OPTIONS=$(set +o)
 set +eE
 FUNC_TC_OUT="$($CALL_TC  runget --boc ${NET_ELECTOR_BOC} active_election_id 2>&1 | cat | grep -i 'unknown error')"
 SOL_TC_OUT="$($CALL_TC -j run --boc ${NET_ELECTOR_BOC} active_election_id '{}' --abi $Elector_ABI 2>&1 | cat | grep -i 'unknown error')"
 set -eE
+eval "$SAVED_OPTIONS"
 if [[ -n $FUNC_TC_OUT ]] && [[ -z $SOL_TC_OUT ]];then
     ELECTOR_TYPE="solidity"
     sed -i.fnc 's|^export ELECTOR_TYPE=.*|export ELECTOR_TYPE="solidity"|' env.sh

@@ -88,6 +88,9 @@ loggers:
   validator_session:
     level: info
 
+  validator_manager:
+    level: info
+    
   telemetry:
     level: error
 

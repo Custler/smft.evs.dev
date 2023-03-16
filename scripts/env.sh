@@ -282,8 +282,8 @@ export SURF_TVC="$NODE_SRC_TOP_DIR/Surf-contracts/solidity/surfmultisig/SurfMult
 
 export Marvin_ABI="${CONFIGS_DIR}/Marvin.abi.json"
 
-export Elector_ABI="${ContractsDIR}/solidity/elector/Elector.abi.json"
-export Config_ABI="${ContractsDIR}/solidity/elector/Config.abi.json"
+export Elector_ABI="${CONFIGS_DIR}/Elector.abi.json"
+export Config_ABI="${CONFIGS_DIR}/Config.abi.json"
 
 #=====================================================
 # Executables

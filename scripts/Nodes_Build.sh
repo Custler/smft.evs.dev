@@ -216,7 +216,7 @@ if ${RUST_NODE_BUILD};then
 
     echo -e "${BoldText}${BlueBack}---INFO: RNODE build flags: ${RNODE_FEATURES} commit: ${GC_TON_NODE} Block version: ${NODE_BLK_VER}${NormText}"
     RUSTFLAGS="-C target-cpu=native" cargo build --release --features "${RNODE_FEATURES}"
-
+    # RUSTFLAGS="-C target-cpu=native -C linker-plugin-lto"
     # cp $NODE_BIN_DIR/rnode $NODE_BIN_DIR/rnode_${BackUP_Time}|cat
     cp -f ${RNODE_SRC_DIR}/target/release/ton_node $NODE_BIN_DIR/rnode
 

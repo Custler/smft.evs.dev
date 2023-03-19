@@ -30,15 +30,21 @@ Curr_RNODE_Commit=$RNODE_GIT_COMMIT
 Curr_RCONS_Commit=$RCONS_GIT_COMMIT
 #===========================================================
 # Check github for new node release
-Node_local_branch="$(git --git-dir="$RNODE_SRC_DIR/.git" status | grep 'On branch'|awk '{print $3}')"
+# get local repo info
 Node_local_commit="$(git --git-dir="$RNODE_SRC_DIR/.git" rev-parse HEAD 2>/dev/null|cat)"
-Node_remote_commit="$(git --git-dir="$RNODE_SRC_DIR/.git" ls-remote 2>/dev/null | grep "$Node_local_branch" |awk '{print $1}')"
-Node_bin_commit="$(rnode -V | grep 'NODE git commit' | awk '{print $5}')"
+Node_local_branch="$(git --git-dir="$RNODE_SRC_DIR/.git" branch -a --contains $Node_local_commit |grep -v '\->'| grep 'remotes/origin'|awk -F'/' '{print $3}')"
+echo "--- Node local branch: $Node_local_branch, commit: $Node_local_commit"
 
-Cons_local_branch="$(git --git-dir="$RCONS_SRC_DIR/.git" status | grep 'On branch'|awk '{print $3}')"
+# Get latest commit from remote branch
+Node_remote_URL="$(git    --git-dir="$RNODE_SRC_DIR/.git" remote -v|grep -i 'fetch'|awk '{print $2}')"
+Node_remote_commit="$(git --git-dir="$RNODE_SRC_DIR/.git" ls-remote $Node_remote_URL $Node_local_branch |awk '{print $1}')"
+Node_bin_commit="$($CALL_RN -V | grep 'NODE git commit' | awk '{print $5}')"
+
 Cons_local_commit="$(git --git-dir="$RCONS_SRC_DIR/.git" rev-parse HEAD 2>/dev/null|cat)"
-Cons_remote_commit="$(git --git-dir="$RCONS_SRC_DIR/.git" ls-remote 2>/dev/null | grep "$Cons_local_branch" |awk '{print $1}')"
-Cons_bin_commit="$(console --verbose | grep 'COMMIT_ID:' | awk '{print $2}')"
+Cons_local_branch="$(git --git-dir="$RCONS_SRC_DIR/.git" branch -a --contains $Cons_local_commit |grep -v '\->'| grep 'remotes/origin'|awk -F'/' '{print $3}')"
+Cons_remote_URL="$(git   --git-dir="$RCONS_SRC_DIR/.git" remote -v|grep -i 'fetch'|awk '{print $2}')"
+Cons_remote_commit="$(git --git-dir="$RCONS_SRC_DIR/.git" ls-remote $Cons_remote_URL $Cons_local_branch |awk '{print $1}')"
+Cons_bin_commit="$($CALL_RC -c getstats | grep 'COMMIT_ID:' | awk '{print $2}')"
 
 # [[ "${RNODE_GIT_COMMIT}" != "master" ]] && Node_remote_commit="${RNODE_GIT_COMMIT}"
 
@@ -50,8 +56,8 @@ if [[ -z $Node_remote_commit ]];then
     echo "###-ERROR(line $LINENO): Cannot get REMOTE node commit!"
     exit 1
 fi
-if [[ "$Node_bin_commit" !=  "$Node_local_commit" ]];then
-    "###-WARNING(line $LINENO): Commit from binary file is not equal git dir commit ($RNODE_SRC_DIR)"
+if [[ "${Node_bin_commit}" !=  "${Node_local_commit}" ]];then
+    echo "###-WARNING(line $LINENO): Commit from binary file is not equal git dir commit $RNODE_SRC_DIR"
 fi
 
 #===========================================================
